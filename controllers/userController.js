@@ -18,35 +18,32 @@ const getUserInfo = async (req, res) => {
   }
 };
 
-// const userRegisteration = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-//     if (!email || !password) {
-//       res.status(400);
-//       throw new Error("All fields are required");
-//     }
+const userRegisteration = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      res.status(400);
+      throw new Error("All fields are required");
+    }
 
-//     const isUserExist = await Users.findOne({ email });
-//     if (isUserExist) {
-//       res.status(400);
-//       throw new Error("User already exists");
-//     }
+    const isUserExist = await Users.findOne({ email });
+    if (isUserExist) {
+      res.status(400);
+      throw new Error("User already exists");
+    }
 
-//     //hash Passwrod
-//     const hashedPasswords = await bcrypt.hash(password, 10);
+    //hash Passwroduserr.create({ email, password: hashedPasswords });
 
-//     const user = await Users.create({ email, password: hashedPasswords });
-
-//     if (user) {
-//       res.status(201).json({ _id: user.id, email: user.email });
-//     } else {
-//       res.status(400);
-//       throw new Error("User data is not valid");
-//     }
-//   } catch (error) {
-//     res.status(500).json({ message: "Something went wrong" });
-//   }
-// };
+    if (user) {
+      res.status(201).json({ _id: user.id, email: user.email });
+    } else {
+      res.status(400);
+      throw new Error("User data is not valid");
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
 
 const loginUser = async (req, res) => {
   try {
@@ -137,7 +134,7 @@ const currentUser = async (req, res) => {
       });
     }
    
-    // Fetch user info
+    // Fetch user infoD
     const userInfo = await UserInfo.findOne({ _id: claims.user._userInfo });
     if (!userInfo) {
       return res.status(404).send({
@@ -231,4 +228,5 @@ module.exports = {
   currentUser,
   logoutUser,
   verifyUserEmail,
+  userRegisteration
 };

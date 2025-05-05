@@ -11,7 +11,7 @@ const Standard = require("../models/standardModal");
 
 //@Benchmark information based on asset ip
 //@ Req Get
-//@URL : /api/standard/assetip
+//@URL : /api/standard/assets
 async function getAssetBenchmark(req, res) {
   try {
     const id = req.query.id;
