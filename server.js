@@ -111,7 +111,6 @@ app.listen(PORT, () => {
   console.log("------------------------------------------------");
   console.log(`Project name: ${process.env.PROJECT}`);
   console.log(`Hosted by: ${process.env.COMPANY}`);
-  console.log(`Developer of the Project: ${process.env.DEVELOPER}`);
   console.log(`${process.env.PROJECT} backend server started`);
   console.log(`Status: Running`);
   console.log(`Listening to Port: ${PORT}`);
