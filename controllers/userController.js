@@ -9,6 +9,7 @@ const Sites = require("../models/sitesModal");
 const Dept = require("../models/departmentModal");
 const Assets = require("../models/assetsModal");
 const SuperAdmin = require("../models/superAdminModal");
+
 const getUserInfo = async (req, res) => {
   try {
     const users = await Users.find();
@@ -21,29 +22,39 @@ const getUserInfo = async (req, res) => {
 const userRegisteration = async (req, res) => {
   try {
     const { email, password } = req.body;
+
     if (!email || !password) {
-      res.status(400);
-      throw new Error("All fields are required");
+      return res.status(400).json({ message: "All fields are required" });
     }
 
+    // Check if the user already exists
     const isUserExist = await Users.findOne({ email });
     if (isUserExist) {
-      res.status(400);
-      throw new Error("User already exists");
+      return res.status(400).json({ message: "User already exists" });
     }
 
-    //hash Passwroduserr.create({ email, password: hashedPasswords });
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create the new user without _userInfo
+    const user = await Users.create({
+      email,
+      password: hashedPassword,
+      isVerified: false, // Assuming users aren't verified by default
+    });
 
     if (user) {
-      res.status(201).json({ _id: user.id, email: user.email });
+      return res.status(201).json({ _id: user.id, email: user.email });
     } else {
-      res.status(400);
-      throw new Error("User data is not valid");
+      return res.status(400).json({ message: "User data is not valid" });
     }
   } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
+    console.error("❌ Registration error:", error.message); // Log the error for debugging
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
+
 
 const loginUser = async (req, res) => {
   try {
@@ -62,6 +73,7 @@ const loginUser = async (req, res) => {
     const userEmail = user[0].email;
     const userInfo = await UserInfo.find({ _id: user[0]._userInfo });
     const role = userInfo[0].role;
+    console.log("userInfo", userInfo);
     if (user.length === 0) {
       res.status(400);
       throw new Error("Invalid email or password");
@@ -222,11 +234,51 @@ const logoutUser = (req, res) => {
   }
 };
 
+// Get all users (with optional population of userInfo)
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await Users.find().populate('_userInfo'); // Optional: add .select('-password') to exclude password
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch users", error: error.message });
+  }
+};
+
+const deleteUserByEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await Users.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Optionally delete associated userInfo
+    if (user._userInfo) {
+      await UserInfo.findByIdAndDelete(user._userInfo);
+    }
+
+    // Delete user
+    await Users.deleteOne({ email });
+
+    res.status(200).json({ message: `User with email ${email} deleted successfully` });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete user", error: error.message });
+  }
+};
+
 module.exports = {
   getUserInfo,
   loginUser,
   currentUser,
   logoutUser,
   verifyUserEmail,
-  userRegisteration
+  userRegisteration,
+  getAllUsers,
+  deleteUserByEmail
 };

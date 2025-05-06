@@ -78,40 +78,59 @@ const deleteAdmin = async (req, res) => {
 //Admin login
 const superAdminLogin = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+
+    // Normalize email to lowercase
     if (!email || !password) {
-      res.status(400);
-      throw new Error("All fields are required");
+      return res.status(400).json({ message: "All fields are required" });
+    }
+    email = email.toLowerCase();
+
+    // Use findOne instead of find
+    const admin = await SuperAdmin.findOne({ email });
+
+    if (!admin) {
+      return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    const admin = await SuperAdmin.find({ email });
-    if (admin.length === 0) {
-      res.status(400);
-      throw new Error("Invalid email or password");
+    // Check password
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Email or password is not valid" });
     }
-    const role = admin[0].role;
-    if (admin && (await bcrypt.compare(password, admin[0].password))) {
-      const accessToken = jwt.sign(
-        {
-          admin: {
-            _id: admin[0]._id,
-          },
+
+    // Generate access token
+    const accessToken = jwt.sign(
+      {
+        admin: {
+          _id: admin._id,
         },
-        process.env.JWT_KEY,
-        { expiresIn: "1d" }
-      );
+      },
+      process.env.JWT_KEY,
+      { expiresIn: "1d" }
+    );
 
-      console.log("accessToken", role);
+    // Optionally set cookie (uncomment if using cookies on frontend)
+    // res.cookie("OsctToken", accessToken, {
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV === "production",
+    //   sameSite: "strict",
+    //   maxAge: 24 * 60 * 60 * 1000, // 1 day
+    // });
 
-      res.status(200).json({ message: "login successful" ,accessToken, role});
-    } else {
-      res.status(400);
-      throw new Error("email or password is not valid");
-    }
+    // Send response
+    return res.status(200).json({
+      message: "Login successful",
+      accessToken,
+      role: admin.role,
+      id: admin._id,
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("Login error:", error.message);
+    return res.status(500).json({ message: "Server error. Please try again." });
   }
 };
+
 
 //Current Admin information
 const currentAdmin = async (req, res) => {
