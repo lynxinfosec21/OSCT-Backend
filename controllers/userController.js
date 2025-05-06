@@ -20,30 +20,50 @@ const getUserInfo = async (req, res) => {
 
 const userRegisteration = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      res.status(400);
-      throw new Error("All fields are required");
+    const { email, password, name, role, _organization } = req.body;
+
+    // Validate input
+    if (!email || !password || !name || !role || !_organization) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
+    // Check if user already exists
     const isUserExist = await Users.findOne({ email });
     if (isUserExist) {
-      res.status(400);
-      throw new Error("User already exists");
+      return res.status(400).json({ message: "User already exists" });
     }
 
-    //hash Passwroduserr.create({ email, password: hashedPasswords });
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    if (user) {
-      res.status(201).json({ _id: user.id, email: user.email });
-    } else {
-      res.status(400);
-      throw new Error("User data is not valid");
-    }
+    // Create user info
+    const userInfo = await UserInfo.create({
+      name,
+      role,
+      _organization,
+    });
+
+    // Create user with link to user info
+    const user = await Users.create({
+      email,
+      password: hashedPassword,
+      _userInfo: userInfo._id,
+      isVerified: false,
+    });
+
+    res.status(201).json({
+      message: "User registered successfully",
+      userId: user._id,
+      email: user.email,
+      role: role,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
+    console.error("Registration Error:", error);
+    res.status(500).json({ message: "Something went wrong during registration" });
   }
 };
+
 
 const loginUser = async (req, res) => {
   try {

@@ -11,7 +11,6 @@ const {
 
 const validateToken = require("../middleware/validateTokenHandler");
 
-
 userRouter.post("/login", loginUser);
 userRouter.post("/register", userRegisteration);
 

@@ -4,7 +4,7 @@ const userSchema = mongoose.Schema(
   {
     _userInfo: {
       type: mongoose.Schema.Types.ObjectId,
-      res: "UserInfo",
+      ref: "UserInfo",
       required: true,
     },
     email: {
