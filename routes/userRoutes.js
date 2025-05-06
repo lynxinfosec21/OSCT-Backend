@@ -8,7 +8,7 @@ const {
   verifyUserEmail,
   userRegisteration,
   getAllUsers,
-  deleteUserByEmail
+  deleteUserById
 } = require("../controllers/userController");
 
 const validateToken = require("../middleware/validateTokenHandler");
@@ -23,5 +23,5 @@ userRouter.get("/verify/:token", verifyUserEmail);
 userRouter.post("/logout", logoutUser);
 
 userRouter.get("/getAllUsers", getAllUsers)
-userRouter.delete("/deleteUser", deleteUserByEmail)
+userRouter.delete("/deleteUser", deleteUserById)
 module.exports = userRouter;
