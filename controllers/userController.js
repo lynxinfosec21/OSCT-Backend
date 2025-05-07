@@ -223,7 +223,6 @@ const verifyUserEmail = async (req, res) => {
 
 //logout user 
 const logoutUser = (req, res) => {
-  
   try {
     res.cookie("OsctToken", "", { maxAge: 0 });
     res.cookie("role", "", { maxAge: 0 });
@@ -247,18 +246,15 @@ const getAllUsers = async (req, res) => {
 const deleteUserById = async (req, res) => {
   try {
     const userId = req.query.id;
-
     if (!userId) {
-      return res.status(400).json({ message: "User ID is required in query params (e.g., ?id=USER_ID)" });
+      return res.status(400).json({ message: "User ID is required in query params" });
     }
 
     const user = await Users.findById(userId);
-
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Optionally delete associated userInfo
     if (user._userInfo) {
       await UserInfo.findByIdAndDelete(user._userInfo);
     }
@@ -270,7 +266,6 @@ const deleteUserById = async (req, res) => {
     res.status(500).json({ message: "Failed to delete user", error: error.message });
   }
 };
-
 
 module.exports = {
   getUserInfo,
