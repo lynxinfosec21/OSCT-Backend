@@ -21,8 +21,9 @@ const getUserInfo = async (req, res) => {
 
 const userRegisteration = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, name, role, _organization } = req.body;
 
+    // Validate input
     if (!email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -36,24 +37,43 @@ const userRegisteration = async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create the new user without _userInfo
-    const user = await Users.create({
+    // Create the new UserInfo document
+    const userInfo = new UserInfo({
+      name,
+      _organization,  // Linking the organization to the UserInfo
+      role,           // Assigning the role to the UserInfo
+    });
+
+    // Save the UserInfo document
+    const savedUserInfo = await userInfo.save();
+
+    // Create the new User document and associate it with the UserInfo
+    const user = new Users({
       email,
       password: hashedPassword,
       isVerified: false, // Assuming users aren't verified by default
+      _userInfo: savedUserInfo._id, // Linking the user with the UserInfo document
     });
 
-    if (user) {
-      return res.status(201).json({ _id: user.id, email: user.email });
+    // Save the User document
+    const savedUser = await user.save();
+
+    if (savedUser) {
+      return res.status(201).json({
+        _id: savedUser._id,
+        email: savedUser.email,
+        name: userInfo.name,
+        role: userInfo.role,
+        _organization: userInfo._organization,
+      });
     } else {
       return res.status(400).json({ message: "User data is not valid" });
     }
   } catch (error) {
-    console.error("❌ Registration error:", error.message); // Log the error for debugging
+    console.error("Registration error:", error.message);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
-
 
 
 const loginUser = async (req, res) => {
@@ -73,7 +93,6 @@ const loginUser = async (req, res) => {
     const userEmail = user[0].email;
     const userInfo = await UserInfo.find({ _id: user[0]._userInfo });
     const role = userInfo[0].role;
-    console.log("userInfo", userInfo);
     if (user.length === 0) {
       res.status(400);
       throw new Error("Invalid email or password");
@@ -120,7 +139,7 @@ const loginUser = async (req, res) => {
         { expiresIn: "1d" }
       );
       
-  
+
       res.status(200).json({ message: "login successful", accessToken, role, id: RedirectDynamicData ? RedirectDynamicData[0]._id : null });
     } else {
       res.status(400);
@@ -131,6 +150,8 @@ const loginUser = async (req, res) => {
     throw new Error("something went wrong");
   }
 };
+
+
 
 //current user
 const currentUser = async (req, res) => {
