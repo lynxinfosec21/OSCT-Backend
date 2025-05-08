@@ -14,6 +14,6 @@ siteRouter.get("/all", getAllSites);
 siteRouter.get("/role", getSitesBasedOnRole);
 siteRouter.get("/specific", getSpecificSiteData);
 siteRouter.post("/register", siteRegistration);
-siteRouter.post("/delete", siteDelete);
+siteRouter.delete("/delete", siteDelete);
 
 module.exports = siteRouter;
