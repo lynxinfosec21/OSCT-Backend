@@ -17,6 +17,6 @@ assetsRouter.post("/register", assetsRegisteration);
 assetsRouter.get("/", allOrganizationAssets);
 assetsRouter.get("/info", specificAssetInfo);
 assetsRouter.get("/assetdata", specificAssetAllData);
-assetsRouter.post("/delete", deleteAssets);
+assetsRouter.delete("/delete", deleteAssets);
 
 module.exports = assetsRouter;
