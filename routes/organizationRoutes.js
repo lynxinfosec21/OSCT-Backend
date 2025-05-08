@@ -26,7 +26,7 @@ organizationRouter.get("/", allOrganizations);
 organizationRouter.get("/data", OrganizationData);
 organizationRouter.post("/register", organizationRegisteration);
 organizationRouter.put("/update", UpdateOrganization);
-organizationRouter.post("/delete", deleteOrganization);
+organizationRouter.delete("/delete", deleteOrganization);
 organizationRouter.get("/getalldata", allOrganizationData);
 organizationRouter.post("/userrole", organizationUserRole);
 organizationRouter.post("/resendverification", resendVerification);
