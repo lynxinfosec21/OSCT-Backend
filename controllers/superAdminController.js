@@ -32,17 +32,23 @@ const superAdminRegisteration = async (req, res) => {
     });
     const verificationLink = `${process.env.BASE_URL}/verify/${verificationToken}`;
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USERNAME,
-      to: email,
-      subject: "Email Verification for Admin",
-      html: `
+    try {
+      await transporter.sendMail({
+        from: process.env.EMAIL_USERNAME,
+        to: email,
+        subject: "Email Verification for Admin",
+        html: `
           <h1>Email Verification</h1>
           <p>Thank you for registering. Please click the link below to verify your email:</p>
           <a href="${verificationLink}">Verify Email</a>
           <p>This link will expire in 10 minutes.</p>
-      `,
-    });
+        `,
+      });
+    } catch (emailError) {
+      // Log the error and return a failure response
+      console.error('Error sending verification email:', emailError);
+      return res.status(500).json({ message: "Error sending verification email. Please try again later." });
+    }
 
     return res.status(200).json({ message: "Admin created successfully.Verification email sent.please verify your email" });
   } catch (error) {
