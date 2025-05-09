@@ -10,8 +10,8 @@ const {
 const adminRouter = express.Router();
 
 adminRouter.post("/register", superAdminRegisteration);
-adminRouter.post("/alladmins", allSuperAdmins);
-adminRouter.post("/delete", deleteAdmin);
+adminRouter.get("/alladmins", allSuperAdmins);
+adminRouter.delete("/delete", deleteAdmin);
 adminRouter.post("/login", superAdminLogin);
 adminRouter.get("/currentAdmin", currentAdmin);
 adminRouter.post("/logout", superAdminLogout);
