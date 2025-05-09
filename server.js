@@ -23,7 +23,7 @@ connectDb();
 //app
 const app = express();
 const corsOptions = {
-  origin: ["http://localhost:3000", "http://localhost:5173","http://localhost:3001", "https://osct.vercel.app"], 
+  origin: ["http://localhost:3000", "http://localhost:5173","http://localhost:3001", "https://osct.vercel.app" , "https://osct-frontend-ookm1atgk-lynx-infosecs-projects.vercel.app/"], 
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
