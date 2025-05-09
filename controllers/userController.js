@@ -9,6 +9,7 @@ const Sites = require("../models/sitesModal");
 const Dept = require("../models/departmentModal");
 const Assets = require("../models/assetsModal");
 const SuperAdmin = require("../models/superAdminModal");
+
 const getUserInfo = async (req, res) => {
   try {
     const users = await Users.find();
@@ -18,35 +19,62 @@ const getUserInfo = async (req, res) => {
   }
 };
 
-// const userRegisteration = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-//     if (!email || !password) {
-//       res.status(400);
-//       throw new Error("All fields are required");
-//     }
+const userRegisteration = async (req, res) => {
+  try {
+    const { email, password, name, role, _organization } = req.body;
 
-//     const isUserExist = await Users.findOne({ email });
-//     if (isUserExist) {
-//       res.status(400);
-//       throw new Error("User already exists");
-//     }
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
-//     //hash Passwrod
-//     const hashedPasswords = await bcrypt.hash(password, 10);
+    // Check if the user already exists
+    const isUserExist = await Users.findOne({ email });
+    if (isUserExist) {
+      return res.status(400).json({ message: "User already exists" });
+    }
 
-//     const user = await Users.create({ email, password: hashedPasswords });
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-//     if (user) {
-//       res.status(201).json({ _id: user.id, email: user.email });
-//     } else {
-//       res.status(400);
-//       throw new Error("User data is not valid");
-//     }
-//   } catch (error) {
-//     res.status(500).json({ message: "Something went wrong" });
-//   }
-// };
+    // Create the new UserInfo document
+    const userInfo = new UserInfo({
+      name,
+      _organization,  // Linking the organization to the UserInfo
+      role,           // Assigning the role to the UserInfo
+    });
+
+    // Save the UserInfo document
+    const savedUserInfo = await userInfo.save();
+
+    // Create the new User document and associate it with the UserInfo
+    const user = new Users({
+      email,
+      password: hashedPassword,
+      isVerified: false, // Assuming users aren't verified by default
+      _userInfo: savedUserInfo._id, // Linking the user with the UserInfo document
+    });
+
+    // Save the User document
+    const savedUser = await user.save();
+
+    if (savedUser) {
+      return res.status(201).json({
+        _id: savedUser._id,
+        email: savedUser.email,
+        name: userInfo.name,
+        role: userInfo.role,
+        _organization: userInfo._organization,
+      });
+    } else {
+      return res.status(400).json({ message: "User data is not valid" });
+    }
+  } catch (error) {
+    console.error("Registration error:", error.message);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
 
 const loginUser = async (req, res) => {
   try {
@@ -111,7 +139,7 @@ const loginUser = async (req, res) => {
         { expiresIn: "1d" }
       );
       
-  
+
       res.status(200).json({ message: "login successful", accessToken, role, id: RedirectDynamicData ? RedirectDynamicData[0]._id : null });
     } else {
       res.status(400);
@@ -122,6 +150,8 @@ const loginUser = async (req, res) => {
     throw new Error("something went wrong");
   }
 };
+
+
 
 //current user
 const currentUser = async (req, res) => {
@@ -137,7 +167,7 @@ const currentUser = async (req, res) => {
       });
     }
    
-    // Fetch user info
+    // Fetch user infoD
     const userInfo = await UserInfo.findOne({ _id: claims.user._userInfo });
     if (!userInfo) {
       return res.status(404).send({
@@ -214,7 +244,6 @@ const verifyUserEmail = async (req, res) => {
 
 //logout user 
 const logoutUser = (req, res) => {
-  
   try {
     res.cookie("OsctToken", "", { maxAge: 0 });
     res.cookie("role", "", { maxAge: 0 });
@@ -225,10 +254,47 @@ const logoutUser = (req, res) => {
   }
 };
 
+// Get all users (with optional population of userInfo)
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await Users.find().populate('_userInfo'); // Optional: add .select('-password') to exclude password
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch users", error: error.message });
+  }
+};
+
+const deleteUserById = async (req, res) => {
+  try {
+    const userId = req.query.id;
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required in query params" });
+    }
+
+    const user = await Users.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user._userInfo) {
+      await UserInfo.findByIdAndDelete(user._userInfo);
+    }
+
+    await Users.findByIdAndDelete(userId);
+
+    res.status(200).json({ message: `User with ID ${userId} deleted successfully` });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete user", error: error.message });
+  }
+};
+
 module.exports = {
   getUserInfo,
   loginUser,
   currentUser,
   logoutUser,
   verifyUserEmail,
+  userRegisteration,
+  getAllUsers,
+  deleteUserById
 };
