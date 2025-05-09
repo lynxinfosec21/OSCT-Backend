@@ -1,3 +1,4 @@
+
 {
   "version": 2,
   "builds": [
@@ -6,16 +7,7 @@
           "use": "@vercel/node"
       }
   ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "headers": {
-        "Access-Control-Allow-Origin": "https://osct-frontend-ookm1atgk-lynx-infosecs-projects.vercel.app",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Access-Control-Allow-Credentials": "true"
-      },
-      "dest": "/server.js"
-    }
-]
+  "rewrites": [
+      { "source": "/(.*)", "destination": "server.js" }
+  ]
 }

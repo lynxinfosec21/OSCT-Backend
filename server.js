@@ -37,59 +37,58 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
-// app.use(cors({
-//   origin: "*"
-// }))
-// app.options("*", cors())
-// app.use(
-//   cors({
-//     origin: ["http://localhost:3000/", "http://localhost:3001"],
-//     credentials: true,
-//   })
-// );
-// app.use(
-//   cors({
-//     credentials: true,
-//     origin: [
-//       "http://localhost:3000",
-//       "http://localhost:3001",
-//       "https://osct-backend-nodejs.vercel.app/",
-//       "https://osct-backend-nodejs.vercel.app",
-//       "https://osct-admin.vercel.app/",
-//       "https://osct-admin.vercel.app",
-//     ],
-//     allowedHeaders: ["Content-Type", "Authorization"],
-//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-//   })
-// );
+app.use(cors({
+  origin: "*"
+}))
+app.options("*", cors())
+app.use(
+  cors({
+    origin: ["http://localhost:3000/", "http://localhost:3001"],
+    credentials: true,
+  })
+);
+app.use(
+  cors({
+    credentials: true,
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "https://osct-backend-nodejs.vercel.app/",
+      "https://osct-backend-nodejs.vercel.app",
+      "https://osct-admin.vercel.app/",
+      "https://osct-admin.vercel.app",
+    ],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  })
+);
 app.set("trust proxy", 1);
-// app.options("/api", cors());
+app.options("/api", cors());
 app.use(express.json());
-// app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
 //To allow cross-origin requests
 
-//test1122
-
-// app.use(function (req, res, next) {
-//   // res.header("Access-Control-Allow-Origin", "*")
-//   res.header(
-//     "Access-Control-Allow-Headers",
-//     "Origin, X-Requested-With, Content-Type, Accept"
-//   );
-//   if ("OPTIONS" == req.method) {
-//     res.send(200);
-//   } else {
-//     next();
-//   }
-// });
-// app.options("/api/admin/login", (req, res) => {
-//   res.setHeader("Access-Control-Allow-Origin", "https://osct-admin.vercel.app");
-//   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-//   res.setHeader("Access-Control-Allow-Credentials", "true");
-//   res.sendStatus(204); // No Content
-// });
+app.use(function (req, res, next) {
+  // res.header("Access-Control-Allow-Origin", "*")
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  if ("OPTIONS" == req.method) {
+    res.send(200);
+  } else {
+    next();
+  }
+});
+app.options("/api/admin/login", (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "https://osct-admin.vercel.app");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.sendStatus(204); // No Content
+});
 
 //router middleware
 app.get("/", (req, res) => {
