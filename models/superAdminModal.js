@@ -24,3 +24,4 @@ const SuperAdminSchema = mongoose.Schema(
 );
 
 module.exports = mongoose.model("SuperAdmin", SuperAdminSchema);
+
