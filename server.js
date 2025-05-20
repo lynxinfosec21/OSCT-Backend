@@ -17,80 +17,51 @@ const deptRouter = require("./routes/deptRoutes");
 
 const PORT = process.env.PORT || 9001;
 
-//database connection   
+// Database connection   
 connectDb();
 
-//app
+// App
 const app = express();
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://localhost:3001",
+  "https://osct-admin.vercel.app",
+  "https://osct-frontend.vercel.app",
+];
+
 const corsOptions = {
-  origin: ["http://localhost:3000", "http://localhost:5173","http://localhost:3001"], 
+  origin: allowedOrigins,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
   optionsSuccessStatus: 200,
 };
 
-app.use(express.json({ limit: '50mb' }));
-
-// If you also need to handle URL-encoded data
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
+app.set("trust proxy", 1);
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
-app.use(cors({
-  origin: "*"
-}))
-app.options("*", cors())
-app.use(
-  cors({
-    origin: ["http://localhost:3000/", "http://localhost:3001"],
-    credentials: true,
-  })
-);
-app.use(
-  cors({
-    credentials: true,
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "https://osct-backend-nodejs.vercel.app/",
-      "https://osct-backend-nodejs.vercel.app",
-      "https://osct-admin.vercel.app/",
-      "https://osct-admin.vercel.app",
-    ],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  })
-);
-app.set("trust proxy", 1);
-app.options("/api", cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
-//To allow cross-origin requests
+// Optional CORS preflight middleware for specific route
+app.options("/api/admin/login", cors(corsOptions), (req, res) => {
+  res.sendStatus(204); // No Content
+});
 
+// Custom header middleware
 app.use(function (req, res, next) {
-  // res.header("Access-Control-Allow-Origin", "*")
   res.header(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept"
   );
-  if ("OPTIONS" == req.method) {
-    res.send(200);
-  } else {
-    next();
-  }
-});
-app.options("/api/admin/login", (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "https://osct-admin.vercel.app");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.sendStatus(204); // No Content
+  next();
 });
 
-//router middleware
+// Routes
 app.get("/", (req, res) => {
   res.send("Welcome to OSCT API");
 });
@@ -102,10 +73,10 @@ app.use("/api/assets", assetsRouter);
 app.use("/api/site", siteRouter);
 app.use("/api/dept", deptRouter);
 
-//errorHandler
+// Error handler
 app.use(errorHandler);
 
-//port listening string
+// Start server
 app.listen(PORT, () => {
   console.log("------------------------------------------------");
   console.log(`Project name: ${process.env.PROJECT}`);
@@ -113,5 +84,5 @@ app.listen(PORT, () => {
   console.log(`${process.env.PROJECT} backend server started`);
   console.log(`Status: Running`);
   console.log(`Listening to Port: ${PORT}`);
-  console.log("-----------------------------------------------");
+  console.log("------------------------------------------------");
 });
